@@ -5,11 +5,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [created]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
@@ -19,12 +20,30 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
       - name: Run tests
         run: mvn test
+
+      - name: Publish to Maven Central
+        if: github.event_name == 'release'
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn \
+            --no-transfer-progress \
+            --batch-mode \
+            -P release \
+            clean deploy
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
