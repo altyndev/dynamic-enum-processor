@@ -16,7 +16,7 @@ public class DynamicEnumProcessorTest {
         JavaFileObject enumClass = JavaFileObjects.forSourceLines("test.TestEnum",
                 "package test;",
                 "",
-                "import io.github.username.DynamicEnum;",
+                "import io.github.altyndev.DynamicEnum;",
                 "",
                 "@DynamicEnum",
                 "public enum TestEnum {",
